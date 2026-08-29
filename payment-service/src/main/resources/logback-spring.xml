@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <!-- Application name to use in log file names -->
+    <property name="APP_NAME" value="payment-service" />
+
+    <!-- Base log directory (relative to project root) -->
+    <property name="LOG_PATH" value="src/main/resources/logs" />
+
+    <!-- Timestamp for log file name -->
+    <timestamp key="BY_DATE" datePattern="yyyy-MM-dd_HH-mm-ss"/>
+
+    <!-- Pattern for log lines -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+
+    <!-- ========================== CONSOLE APPENDER ========================== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ========================== FILE APPENDER ============================= -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- Base log file name -->
+        <file>${LOG_PATH}/${APP_NAME}-${BY_DATE}.log</file>
+
+        <!-- Rolling policy: rotate daily or when file exceeds 50MB -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/archive/${APP_NAME}-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ========================== ASYNC WRAPPER ============================= -->
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="FILE" />
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+    </appender>
+
+    <!-- ========================== ROOT LOGGER =============================== -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ASYNC_FILE" />
+    </root>
+
+    <!-- ========================== PACKAGE-SPECIFIC LOGGING ================== -->
+    <logger name="com.payment.paymentservice" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ASYNC_ROLLING"/>
+        <appender-ref ref="ASYNC_PER_RUN"/>
+    </logger>
+
+</configuration>

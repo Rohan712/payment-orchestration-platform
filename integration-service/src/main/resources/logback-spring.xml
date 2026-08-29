@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <!-- Application name -->
+    <springProperty scope="context" name="APP_NAME" source="spring.application.name" defaultValue="integration-service"/>
+
+    <!-- Log path INSIDE resources folder -->
+    <property name="LOG_PATH" value="src/main/resources/logs"/>
+    <timestamp key="RUN_TS" datePattern="yyyy-MM-dd_HH-mm-ss"/>
+
+    <property name="LOG_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+
+    <!-- Console output -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Rolling file appender -->
+    <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-current.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/archive/${APP_NAME}-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Per-run log file (new file each app start) -->
+    <appender name="PER_RUN" class="ch.qos.logback.core.FileAppender">
+        <file>${LOG_PATH}/${APP_NAME}-${RUN_TS}.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Async wrappers -->
+    <appender name="ASYNC_ROLLING" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="ROLLING"/>
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+    </appender>
+
+    <appender name="ASYNC_PER_RUN" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="PER_RUN"/>
+        <queueSize>256</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+    </appender>
+
+    <!-- Integration service logs -->
+    <logger name="com.payment.integrationservice" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ASYNC_ROLLING"/>
+        <appender-ref ref="ASYNC_PER_RUN"/>
+    </logger>
+
+    <!-- Root -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="ASYNC_ROLLING"/>
+        <appender-ref ref="ASYNC_PER_RUN"/>
+    </root>
+</configuration>

@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: audit-service
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  topic:
+    payment-status-events: payment.status
+  consumer:
+    group-id: audit-service
+    auto-offset-reset: earliest
+
+logging:
+  level:
+    com.example.auditservice: INFO
+    org.apache.kafka: INFO

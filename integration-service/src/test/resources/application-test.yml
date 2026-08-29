@@ -1,0 +1,19 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+
+# cover any placeholder chain used by SecurityConfig
+INTEGRATION_JWT_SECRET: test-secret-123
+security:
+  jwt:
+    secret: test-secret-123
+jwt:
+  secret: test-secret-123
+
+stripe:
+  webhook-secret: whsec_test
+  secret-key: sk_test_dummy

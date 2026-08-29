@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: notification-service
+
+  # Gmail SMTP - must be under spring.mail for auto-config to create JavaMailSender
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  topic:
+    payment-status-events: payment.status
+  consumer:
+    group-id: notification-service
+    auto-offset-reset: earliest
+
+user:
+  service:
+    base-url: ${USER_SERVICE_BASE_URL:http://localhost:8081}
+
+notification:
+  email:
+    from: ${MAIL_FROM}
+
+logging:
+  level:
+    com.example.notificationservice: INFO
+    org.apache.kafka: INFO
+server:
+  port: 8089

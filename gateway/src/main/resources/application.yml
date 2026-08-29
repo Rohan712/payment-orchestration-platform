@@ -1,0 +1,104 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  cloud:
+    gateway:
+      server:
+        webflux:
+          default-filters:
+            - name: RequestRateLimiter
+              args:
+                redis-rate-limiter.replenishRate: ${RATE_LIMIT_RPS}
+                redis-rate-limiter.burstCapacity: ${RATE_LIMIT_BURST}
+                key-resolver: "#{@ipKeyResolver}"
+          routes:
+            # User Service
+            - id: user-register
+              uri: lb://user-service
+              predicates:
+                - Method=POST
+                - Path=/api/v1/users/register
+              filters:
+                - PreserveHostHeader
+
+            - id: user-login
+              uri: lb://user-service
+              predicates:
+                - Method=POST
+                - Path=/api/v1/users/login
+              filters:
+                - PreserveHostHeader
+
+            - id: user-change-password
+              uri: lb://user-service
+              predicates:
+                - Method=PUT
+                - Path=/api/v1/users/change-password
+              filters:
+                - PreserveHostHeader
+
+            - id: user-get-by-id
+              uri: lb://user-service
+              predicates:
+                - Method=GET
+                - Path=/api/v1/users/{id}
+              filters:
+                - PreserveHostHeader
+            - id: user-validate-token
+              uri: lb://user-service
+              predicates:
+                - Method=POST
+                - Path=/api/v1/users/validate-token
+              filters:
+                - PreserveHostHeader
+
+            # Payment Service
+            - id: payment-create
+              uri: lb://payment-service
+              predicates:
+                - Method=POST
+                - Path=/api/v1/payments
+              filters:
+                - PreserveHostHeader
+
+            - id: payment-get
+              uri: lb://payment-service
+              predicates:
+                - Method=GET
+                - Path=/api/v1/payments/{transactionId}
+              filters:
+                - PreserveHostHeader
+
+user:
+  service:
+    base-url: ${USER_SERVICE_URL}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    hostname: localhost
+    instance-id: ${spring.application.name}:${server.port}
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+jwt:
+  signing-key: ${JWT_SECRET}
+  user-claim: "sub"

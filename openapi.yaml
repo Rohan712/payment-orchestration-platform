@@ -1,0 +1,409 @@
+openapi: 3.0.3
+
+info:
+  title: Payment Orchestration Platform API
+  description: |
+    REST API for the Payment Orchestration Platform.
+
+    All client-facing APIs are routed through the API Gateway.
+    Authentication is handled using JWT bearer tokens.
+
+    The platform provides:
+    - User registration and authentication
+    - Password management
+    - User retrieval
+    - Payment creation and retrieval
+    - Gateway health monitoring
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local API Gateway
+
+tags:
+  - name: Authentication
+    description: User registration and authentication
+  - name: Users
+    description: User management APIs
+  - name: Payments
+    description: Payment processing APIs
+  - name: Health
+    description: Service health endpoints
+
+paths:
+
+  /api/v1/users/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      operationId: registerUser
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequest'
+            example:
+              firstName: Rohan
+              lastName: Sharma
+              email: rohan@example.com
+              password: Password@123
+
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: Invalid request
+        '409':
+          description: User already exists
+
+  /api/v1/users/login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate user
+      operationId: loginUser
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: rohan@example.com
+              password: Password@123
+
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+
+        '401':
+          description: Invalid credentials
+
+  /api/v1/users/change-password:
+    post:
+      tags:
+        - Authentication
+      summary: Change user password
+      operationId: changePassword
+
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+            example:
+              currentPassword: Password@123
+              newPassword: NewPass@123
+
+      responses:
+        '200':
+          description: Password changed successfully
+        '400':
+          description: Invalid password
+        '401':
+          description: Unauthorized
+
+  /api/v1/users/{userId}:
+    get:
+      tags:
+        - Users
+      summary: Get user by ID
+      operationId: getUserById
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: Unique identifier of the user
+          schema:
+            type: integer
+            format: int64
+          example: 1
+
+      responses:
+        '200':
+          description: User retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+
+        '401':
+          description: Unauthorized
+
+        '404':
+          description: User not found
+
+  /api/v1/payments:
+    post:
+      tags:
+        - Payments
+      summary: Create a payment
+      operationId: createPayment
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: |
+            Unique key used to safely retry payment requests
+            without creating duplicate transactions.
+          schema:
+            type: string
+          example: idem-ORD-1001-001
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentRequest'
+            example:
+              amount: 1999
+              currency: INR
+              description: Test payment
+              metadata:
+                orderId: ORD-1001
+
+      responses:
+        '201':
+          description: Payment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+
+        '400':
+          description: Invalid payment request
+
+        '401':
+          description: Unauthorized
+
+        '409':
+          description: Duplicate idempotency key
+
+        '502':
+          description: Payment provider error
+
+  /api/v1/payments/{transactionId}:
+    get:
+      tags:
+        - Payments
+      summary: Get payment by transaction ID
+      operationId: getPaymentByTransactionId
+
+      security:
+        - bearerAuth: []
+
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          description: Unique payment transaction identifier
+          schema:
+            type: string
+          example: txn_12345
+
+      responses:
+        '200':
+          description: Payment retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+
+        '401':
+          description: Unauthorized
+
+        '404':
+          description: Transaction not found
+
+  /actuator/health:
+    get:
+      tags:
+        - Health
+      summary: Gateway health check
+      operationId: gatewayHealth
+
+      responses:
+        '200':
+          description: Gateway is healthy
+          content:
+            application/json:
+              example:
+                status: UP
+
+components:
+
+  securitySchemes:
+
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token obtained from the login endpoint.
+
+  schemas:
+
+    RegisterUserRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - password
+      properties:
+        firstName:
+          type: string
+          example: Rohan
+        lastName:
+          type: string
+          example: Sharma
+        email:
+          type: string
+          format: email
+          example: rohan@example.com
+        password:
+          type: string
+          format: password
+          example: Password@123
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: rohan@example.com
+        password:
+          type: string
+          format: password
+          example: Password@123
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT access token
+          example: eyJhbGciOiJIUzI1NiJ9...
+
+    ChangePasswordRequest:
+      type: object
+      required:
+        - currentPassword
+        - newPassword
+      properties:
+        currentPassword:
+          type: string
+          format: password
+          example: Password@123
+        newPassword:
+          type: string
+          format: password
+          example: NewPass@123
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        firstName:
+          type: string
+          example: Rohan
+        lastName:
+          type: string
+          example: Sharma
+        email:
+          type: string
+          format: email
+          example: rohan@example.com
+
+    CreatePaymentRequest:
+      type: object
+      required:
+        - amount
+        - currency
+      properties:
+        amount:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Payment amount in the smallest currency unit.
+          example: 1999
+
+        currency:
+          type: string
+          description: ISO 4217 currency code.
+          example: INR
+
+        description:
+          type: string
+          example: Test payment
+
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            orderId: ORD-1001
+
+    PaymentResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+          example: txn_12345
+
+        status:
+          type: string
+          example: SUCCESS
+
+        amount:
+          type: integer
+          format: int64
+          example: 1999
+
+        currency:
+          type: string
+          example: INR
+
+        description:
+          type: string
+          example: Test payment
+
+        stripePaymentIntentId:
+          type: string
+          example: pi_123456789
+
+        idempotencyKey:
+          type: string
+          example: idem-ORD-1001-001
+
+        createdAt:
+          type: string
+          format: date-time
+          example: 2026-08-29T12:30:00Z

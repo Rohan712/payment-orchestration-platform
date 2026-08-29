@@ -1,0 +1,39 @@
+spring:
+  kafka:
+    listener:
+      auto-startup: false
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+eureka:
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  instance:
+    prefer-ip-address: true
+
+PAYMENT_EVENT: payment.events
+
+
+flipt:
+  base-url: http://localhost:8087
+  namespace: default
+
+stripe:
+  secret-key: sk_test_dummy
+
+integration:
+  base-url: http://localhost:0
+  jwt:
+    secret: test-secret
+  payments:
+    uri: /v1/integrations/payments

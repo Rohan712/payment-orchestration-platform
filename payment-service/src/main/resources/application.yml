@@ -1,0 +1,60 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: payment-service
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+      show-sql: true
+    properties:
+      hibernate.format_sql: true
+
+
+stripe:
+secret-key: ${STRIPE_SECRET_KEY}
+
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  producer:
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    properties:
+      spring.json.add.type.headers: false   # optional: keep headers clean
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  topic:
+    payment-events: ${PAYMENT_EVENT}
+    webhook-events: webhook.events
+    payment-status-events: payment.status
+    consumer:
+      group-id: payment-service
+      auto-offset-reset: earliest
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    ip-address: 127.0.0.1
+    hostname: localhost
+    instance-id: ${spring.application.name}:${server.port}
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+flipt:
+  base-url: http://localhost:8087
+  namespace:
+
+integration:
+  base-url: http://localhost:8084
+  jwt:
+    secret: ${INTEGRATION_JWT_SECRET}
+  payments:
+      uri: /v1/integrations/payments

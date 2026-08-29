@@ -1,0 +1,33 @@
+server:
+  port: 8084
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+      show-sql: true
+    properties:
+      hibernate.format_sql: true
+
+kafka:
+  bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  consumer:
+    group-id: integration-service
+    auto-offset-reset: earliest
+  topic:
+    payment-events: payment.events
+    webhook-events: webhook.events
+
+stripe:
+  secret-key: ${STRIPE_SECRET_KEY}
+  webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+
+webhook-secret: ${STRIPE_WEBHOOK_SECRET}
+
+security:
+  jwt:
+    secret: ${INTEGRATION_JWT_SECRET}
