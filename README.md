@@ -3,26 +3,6 @@
 Event-driven payment processing platform built using
 Java, Spring Boot, Kafka, PostgreSQL, Docker and Kubernetes.
 
-## Project Structure
-payment-orchestration-platform/
-│
-├── gateway/
-│
-├── payment-service/
-│
-├── integration-service/
-│
-├── user-service/
-│
-├── notification-service/
-│
-├── audit-service/
-│
-├── docs/
-│
-├── docker-compose.yml
-│
-└── README.md
 ## Services
 
 | Service | Responsibility |
@@ -34,33 +14,6 @@ payment-orchestration-platform/
 | Notification | Payment notifications |
 | Audit | Transaction audit trail |
 
-## Payment Flow
-
-Client
-│
-▼
-API Gateway
-│
-│ JWT Validation
-▼
-Payment Service
-│
-│ Create PaymentIntent
-▼
-Stripe
-│
-│ Webhook
-▼
-Integration Service
-│
-│ Publish Payment Status Event
-▼
-Kafka
-│
-├───────────────┐
-▼               ▼
-Notification     Audit
-Service          Service
 
 ## Key Engineering Decisions
 
