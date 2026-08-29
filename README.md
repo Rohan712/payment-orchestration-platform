@@ -3,56 +3,6 @@
 Event-driven payment processing platform built using
 Java, Spring Boot, Kafka, PostgreSQL, Docker and Kubernetes.
 
-## Architecture
-
-'
-                         ┌─────────────────────┐
-                         │       Client        │
-                         └──────────┬──────────┘
-                                    │
-                                    ▼
-                         ┌─────────────────────┐
-                         │    API Gateway      │
-                         │  JWT Authentication │
-                         │    API Routing      │
-                         └──────────┬──────────┘
-                                    │
-                    ┌───────────────┼────────────────┐
-                    │               │                │
-                    ▼               ▼                ▼
-             ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-             │   Payment   │ │    User     │ │   Other     │
-             │   Service   │ │   Service   │ │   APIs      │
-             └──────┬──────┘ └─────────────┘ └─────────────┘
-                    │
-                    │ Stripe PaymentIntent
-                    ▼
-             ┌─────────────┐
-             │   Stripe    │
-             └──────┬──────┘
-                    │
-                    │ Webhook
-                    ▼
-             ┌─────────────┐
-             │ Integration │
-             │   Service   │
-             └──────┬──────┘
-                    │
-                    │ Kafka
-                    ▼
-              ┌────────────┐
-              │   Kafka    │
-              └─────┬──────┘
-                    │
-          ┌─────────┴──────────┐
-          │                    │
-          ▼                    ▼
- ┌─────────────────┐   ┌─────────────────┐
- │   Notification  │   │      Audit      │
- │     Service     │   │     Service     │
- └─────────────────┘   └─────────────────┘
- 
-'
 ## Project Structure
 payment-orchestration-platform/
 │
@@ -137,10 +87,6 @@ DB_URL=
 ## API Documentation
 
 Refer openapi.yml for API specifications and endpoints.
-
-## Testing
-
-...
 
 ## Design Goals
 
